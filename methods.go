@@ -55,14 +55,7 @@ func (i *Data) valueAndRawValue() (value string, rawValue uint64) {
 	return
 }
 
-func (i *Data) Value() string {
-	defer i.mutex.RUnlock()
-	i.mutex.RLock()
-
-	return i.value
-}
-
-func (i *Data) CheckValue(value string) bool {
+func (i *Data) Check(value string) bool {
 	defer i.mutex.RUnlock()
 	i.mutex.RLock()
 
@@ -70,5 +63,8 @@ func (i *Data) CheckValue(value string) bool {
 }
 
 func (i *Data) String() string {
-	return i.Value()
+	defer i.mutex.RUnlock()
+	i.mutex.RLock()
+
+	return i.value
 }
