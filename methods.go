@@ -10,7 +10,7 @@ func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 
-// runs in own goroutine
+// watch runs in own goroutine
 func (i *Data) watch() {
 	for {
 		time.Sleep(i.halfTimeout)
@@ -19,21 +19,23 @@ func (i *Data) watch() {
 }
 
 const (
-	maxGenerateNextRawValueAttempts = 4
+	maxGenerateNextRawValueAttempts = 16
 	valueFormatBase                 = 13
 )
 
+// generateValues should not be called concurrently
 func (i *Data) generateValues() {
 	currValue, currRawValue := i.valueAndRawValue()
-	attempts := 0
-work:
-	nextRawValue := rand.Uint64()
+	var nextRawValue uint64
 
-	if nextRawValue == currRawValue {
-		if attempts++; attempts == maxGenerateNextRawValueAttempts {
-			nextRawValue = currRawValue + uint64(rand.Uint32())
-		} else {
-			goto work
+	for attempts := 1; ; attempts++ {
+		if nextRawValue = rand.Uint64(); nextRawValue != currRawValue {
+			break
+		}
+
+		if attempts == maxGenerateNextRawValueAttempts {
+			nextRawValue = currRawValue + uint64(rand.Uint32()) // fallback to guaranteed increment
+			break
 		}
 	}
 
